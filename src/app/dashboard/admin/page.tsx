@@ -218,13 +218,13 @@ useEffect(() => {
         open={snackbarOpen}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }} // bottom-center
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }} 
       >
         <Alert
           severity="success"
           onClose={() => setSnackbarOpen(false)}
           sx={{
-            backgroundColor: "#4caf50", // green background
+            backgroundColor: "#4caf50",
             color: "#fff",
             fontWeight: "bold",
           }}

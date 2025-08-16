@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import socket from "@/lib/socket"; // ✅ তোমার socket instance import করতে হবে
+import socket from "@/lib/socket"; 
 
 interface Task {
   id: number;
@@ -17,7 +17,7 @@ const AdminTotalTaskList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // API দিয়ে সব টাস্ক ফেচ করা
+
   const fetchTasks = async () => {
     try {
       const res = await fetch("http://localhost:4000/task/getall", {
@@ -39,17 +39,17 @@ const AdminTotalTaskList = () => {
     fetchTasks();
   }, []);
 
-  // ✅ Socket.io দিয়ে real-time updates
+  // ✅ Socket.io  real-time updates
   useEffect(() => {
-    // নতুন টাস্ক create হলে
+    //  create task
     socket.on("task.created", (newTask: Task) => {
       setTasks((prev) => {
-        if (prev.some((task) => task.id === newTask.id)) return prev; // ডুপ্লিকেট আটকানো
+        if (prev.some((task) => task.id === newTask.id)) return prev;
         return [newTask, ...prev];
       });
     });
 
-    // টাস্ক delete হলে
+    //  delete task
     socket.on("task.deleted", (data: { id: number }) => {
       setTasks((prev) => prev.filter((task) => task.id !== data.id));
     });

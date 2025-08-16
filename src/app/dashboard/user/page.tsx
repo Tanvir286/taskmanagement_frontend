@@ -7,8 +7,8 @@ import { Snackbar, Alert, Button } from "@mui/material";
 import socket from "@/lib/socket"; 
 import UserCount from "../../../component/layout/UserCount";
 import UserList from "../../../component/layout/UserList";
-import TaskUserList from "../../../component/layout/TaskListUser";
 import UserTotalTaskList from "@/component/section/user/UserTotalTaskList";
+import UserProcessTable from "@/component/section/user/UserProcessTable";
 
 
 interface JwtPayload {
@@ -29,10 +29,10 @@ const Userpage = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  // Card state
+  // Card 
   const [activeCard, setActiveCard] = useState<"tasks" | "users" | null>(null);
 
-  // Get user from token
+  // Get user 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
@@ -221,7 +221,7 @@ const Userpage = () => {
 
       {/* Conditional Lists */}
       <div className="px-6 py-4">
-        {activeCard === "tasks" && <TaskUserList/>}
+        {activeCard === "tasks" && <UserProcessTable/>}
         {activeCard === "users" && <UserList />}
       </div>
     </div>

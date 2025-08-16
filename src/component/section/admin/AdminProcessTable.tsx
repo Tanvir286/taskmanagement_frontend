@@ -82,7 +82,7 @@ export default function AdminProcessTable() {
 
     socket.on('task.created', (newTask: Task) => {
     setTasks(prev => {
-      if (prev.some(task => task.id === newTask.id)) return prev; // ডুপ্লিকেট ঠেকানো
+      if (prev.some(task => task.id === newTask.id)) return prev; 
       return [newTask, ...prev];
      });
     });
