@@ -7,7 +7,7 @@ export default function UserCount() {
   useEffect(() => {
     const fetchUserCount = async () => {
       try {
-        const res = await fetch('http://localhost:4000/auth/getall');
+        const res = await fetch('https://nestjs-task-production-09a2.up.railway.app/auth/getall');
         if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
         setUserCount(data.length);

@@ -23,7 +23,7 @@ interface JwtPayload {
 }
 
 // Socket.io client
-const socket = io('http://localhost:4000');
+const socket = io('https://nestjs-task-production-09a2.up.railway.app');
 
 export default function TaskUserList() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -51,7 +51,7 @@ export default function TaskUserList() {
       const decoded = jwtDecode<JwtPayload>(token);
       const username = decoded.username;
 
-      const res = await fetch(`http://localhost:4000/task/getall`, {
+      const res = await fetch(`https://nestjs-task-production-09a2.up.railway.app/task/getall`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Failed to fetch tasks");
@@ -133,7 +133,7 @@ export default function TaskUserList() {
       const token = localStorage.getItem("access_token");
       if (!token) throw new Error("No token found");
 
-      const res = await fetch(`http://localhost:4000/task/updatebyuser/${editingTask.id}`, {
+      const res = await fetch(`https://nestjs-task-production-09a2.up.railway.app/task/updatebyuser/${editingTask.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status: statusValue }),

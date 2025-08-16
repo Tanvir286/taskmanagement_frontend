@@ -20,7 +20,7 @@ const AdminTotalTaskList = () => {
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch("http://localhost:4000/task/getall", {
+      const res = await fetch("https://nestjs-task-production-09a2.up.railway.app/task/getall", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },

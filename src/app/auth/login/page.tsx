@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+
 
 const LoginPage = () => {
   const router = useRouter();
@@ -15,7 +15,7 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:4000/auth/login", {
+      const res = await fetch("https://nestjs-task-production-09a2.up.railway.app/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -82,12 +82,7 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Don’t have an account?{" "}
-          <Link href="/auth/register" className="text-blue-500 font-medium hover:underline">
-            Register
-          </Link>
-        </p>
+        
       </div>
     </div>
   );

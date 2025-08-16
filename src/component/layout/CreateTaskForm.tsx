@@ -54,7 +54,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ open, onClose, onTaskCr
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem("access_token");
-        const res = await fetch("http://localhost:4000/auth/getall", {
+        const res = await fetch("https://nestjs-task-production-09a2.up.railway.app/auth/getall", {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
@@ -88,7 +88,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ open, onClose, onTaskCr
         return;
       }
 
-      const res = await fetch("http://localhost:4000/task/create", {
+      const res = await fetch("https://nestjs-task-production-09a2.up.railway.app/task/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

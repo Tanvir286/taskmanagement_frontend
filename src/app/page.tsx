@@ -13,7 +13,7 @@ export default function Home() {
       router.push("/auth/login");
     } else {
       // login আছে, main page চালাও
-      router.push("/dashboard"); // main dashboard route
+      router.push("/dashboard"); 
     }
   }, [router]);
 

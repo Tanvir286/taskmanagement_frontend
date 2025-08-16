@@ -1,7 +1,8 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Snackbar, Alert } from '@mui/material';
-import socket from '@/lib/socket'; // Make sure this is your configured Socket.IO client instance
+import socket from '@/lib/socket'; // Your configured Socket.IO client
+import { TbLayersSelected } from "react-icons/tb";
 
 interface Task {
   id: number;
@@ -14,6 +15,7 @@ interface Task {
     id: number;
     username: string;
   };
+  comments?: { id: number; content: string }[]; // comments added
 }
 
 interface User {
@@ -28,9 +30,9 @@ export default function AdminProcessTable() {
   const [error, setError] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deleteTask, setDeleteTask] = useState<Task | null>(null);
+  const [viewCommentsTask, setViewCommentsTask] = useState<Task | null>(null);
   const [formData, setFormData] = useState<any>({});
 
-  // Snackbar state
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
@@ -43,7 +45,7 @@ export default function AdminProcessTable() {
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch('http://localhost:4000/task/getall', {
+      const res = await fetch('https://nestjs-task-production-09a2.up.railway.app/task/getall', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -60,7 +62,7 @@ export default function AdminProcessTable() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('http://localhost:4000/auth/getall', {
+      const res = await fetch('https://nestjs-task-production-09a2.up.railway.app/auth/getall', {
         headers: { "Content-Type": "application/json" },
       });
       if (!res.ok) throw new Error(`Failed to fetch users: ${res.status} ${res.statusText}`);
@@ -71,36 +73,26 @@ export default function AdminProcessTable() {
     }
   };
 
-  // Initial fetch
   useEffect(() => {
     fetchTasks();
     fetchUsers();
   }, []);
 
-  // Socket.io listeners for real-time updates
   useEffect(() => {
-
     socket.on('task.created', (newTask: Task) => {
-    setTasks(prev => {
-      if (prev.some(task => task.id === newTask.id)) return prev; 
-      return [newTask, ...prev];
-     });
+      setTasks(prev => prev.some(t => t.id === newTask.id) ? prev : [newTask, ...prev]);
     });
-
     socket.on('task.updated', (updatedTask: Task) => {
       setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task));
       showSnackbar(`Task updated: ${updatedTask.title}`, 'success');
     });
-
     socket.on('task.deleted', (data: { id: number }) => {
       setTasks(prev => prev.filter(task => task.id !== data.id));
       showSnackbar(`Task deleted (ID: ${data.id})`, 'error');
     });
-
-    socket.on('task.updatedbyuser', (updatedTask) => {
+    socket.on('task.updatedbyuser', (updatedTask: Task) => {
       setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task));
     });
-
 
     return () => {
       socket.off('taskCreated');
@@ -126,9 +118,9 @@ export default function AdminProcessTable() {
   };
 
   const handleUpdate = async () => {
+    if (!editingTask) return;
     try {
-      if (!editingTask) return;
-      const res = await fetch(`http://localhost:4000/task/update/${editingTask.id}`, {
+      const res = await fetch(`https://nestjs-task-production-09a2.up.railway.app/task/update/${editingTask.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +138,7 @@ export default function AdminProcessTable() {
   const handleDelete = async () => {
     if (!deleteTask) return;
     try {
-      const res = await fetch(`http://localhost:4000/task/delete/${deleteTask.id}`, {
+      const res = await fetch(`https://nestjs-task-production-09a2.up.railway.app/task/delete/${deleteTask.id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -174,7 +166,6 @@ export default function AdminProcessTable() {
   return (
     <div className="bg-white rounded-lg shadow p-4 mt-4">
       <h3 className="text-lg font-bold mb-2">Task List</h3>
-
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
@@ -184,6 +175,7 @@ export default function AdminProcessTable() {
             <tr className="bg-gray-100">
               <th className="border px-2 py-1">ID</th>
               <th className="border px-2 py-1">Title</th>
+              <th className="border px-2 py-1">Description</th>
               <th className="border px-2 py-1">Priority</th>
               <th className="border px-2 py-1">Status</th>
               <th className="border px-2 py-1">Assigned User</th>
@@ -191,35 +183,54 @@ export default function AdminProcessTable() {
               <th className="border px-2 py-1">Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {tasks.map(task => (
               <tr className="hover:bg-gray-50" key={task.id}>
                 <td className="border px-2 py-1">{task.id}</td>
                 <td className="border px-2 py-1">{task.title}</td>
+                <td className="border px-2 py-1">{task.description}</td>
                 <td className="border px-2 py-1">{task.priority}</td>
                 <td className="border px-2 py-1">{task.status}</td>
                 <td className="border px-2 py-1">{task.assignedUser.username}</td>
-                <td className="border px-2 py-1">
-                  {new Date(task.deadline).toLocaleDateString()} ({getTimeLeft(task.deadline)})
-                </td>
+                <td className="border px-2 py-1">{new Date(task.deadline).toLocaleDateString()}</td>
                 <td className="border px-2 py-1 flex gap-2">
                   <button
-                    className="bg-blue-500 text-white px-2 py-1 rounded"
-                    onClick={() => handleEditClick(task)}
+                    className="bg-gray-200 text-black px-2 py-1 rounded flex items-center gap-1"
+                    onClick={() => setViewCommentsTask(task)}
                   >
-                    Edit
+                    <TbLayersSelected /> Comments
                   </button>
-                  <button
-                    className="bg-red-500 text-white px-2 py-1 rounded"
-                    onClick={() => setDeleteTask(task)}
-                  >
-                    Delete
-                  </button>
+                  <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => handleEditClick(task)}>Edit</button>
+                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => setDeleteTask(task)}>Delete</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+      )}
+
+      {/* Comments Modal */}
+      {viewCommentsTask && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+          <div className="bg-white rounded-xl p-6 w-1/3 relative max-h-[70vh] overflow-y-auto">
+            <h4 className="text-xl font-semibold mb-4">Comments for: {viewCommentsTask.title}</h4>
+            {viewCommentsTask.comments && viewCommentsTask.comments.length > 0 ? (
+              <ul className="space-y-2">
+                {viewCommentsTask.comments.map(comment => (
+                  <li key={comment.id} className="flex items-center gap-2 border-b pb-1">
+                    <TbLayersSelected className="text-blue-500" /> {comment.content}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500">No comments available</p>
+            )}
+            <div className="flex justify-end mt-4">
+              <button onClick={() => setViewCommentsTask(null)} className="bg-gray-300 px-4 py-2 rounded">Close</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Edit Modal */}
