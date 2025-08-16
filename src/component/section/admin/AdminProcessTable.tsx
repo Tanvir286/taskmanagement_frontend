@@ -21,7 +21,7 @@ interface User {
   username: string;
 }
 
-export default function TaskList() {
+export default function AdminProcessTable() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,12 +79,14 @@ export default function TaskList() {
 
   // Socket.io listeners for real-time updates
   useEffect(() => {
+
     socket.on('task.created', (newTask: Task) => {
     setTasks(prev => {
       if (prev.some(task => task.id === newTask.id)) return prev; // ডুপ্লিকেট ঠেকানো
       return [newTask, ...prev];
+     });
     });
-  });
+
     socket.on('task.updated', (updatedTask: Task) => {
       setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task));
       showSnackbar(`Task updated: ${updatedTask.title}`, 'success');
@@ -93,6 +95,10 @@ export default function TaskList() {
     socket.on('task.deleted', (data: { id: number }) => {
       setTasks(prev => prev.filter(task => task.id !== data.id));
       showSnackbar(`Task deleted (ID: ${data.id})`, 'error');
+    });
+
+    socket.on('task.updatedbyuser', (updatedTask) => {
+      setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task));
     });
 
 

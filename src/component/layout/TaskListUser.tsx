@@ -146,7 +146,7 @@ export default function TaskUserList() {
 
       const updatedTask: Task = await res.json();
       setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
-      showSnackbar("Task status updated successfully", "success");
+      
       setEditingTask(null);
     } catch (err: any) {
       showSnackbar(err.message || "Something went wrong", 'error');

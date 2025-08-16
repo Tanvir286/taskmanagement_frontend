@@ -5,14 +5,10 @@ import { FaBell } from "react-icons/fa";
 import { jwtDecode } from "jwt-decode";
 import { Snackbar, Alert, Button } from "@mui/material";
 import socket from "@/lib/socket"; 
-
-// এখান থেকে import করুন (আপনার structure অনুযায়ী adjust করবেন)
-
 import UserCount from "../../../component/layout/UserCount";
-
 import UserList from "../../../component/layout/UserList";
 import TaskUserList from "../../../component/layout/TaskListUser";
-import TaskUserboardPage from "@/component/layout/TaskUserboradPage";
+import UserTotalTaskList from "@/component/section/user/UserTotalTaskList";
 
 
 interface JwtPayload {
@@ -76,6 +72,19 @@ const Userpage = () => {
       setSnackbarMessage(message);
       setSnackbarOpen(true);
     });
+
+
+   // Task Update by User
+    socket.on("task.updatedbyuser", (task) => {
+      const message = `Task "${task.title}" (ID: ${task.id}) has been updated by ${task.updatedBy?.username || "N/A"}.`;
+      setNotifications((prev) => [
+        { message, time: new Date().toLocaleTimeString() },
+        ...prev,
+      ]);
+      setSnackbarMessage(message);
+      setSnackbarOpen(true);
+    });
+
 
     // Cleanup
     return () => {
@@ -203,7 +212,7 @@ const Userpage = () => {
       {/* Top Cards */}
       <div className="flex space-x-4 px-6">
         <div onClick={() => setActiveCard("tasks")} className="cursor-pointer">
-          <TaskUserboardPage />
+          <UserTotalTaskList />
         </div>
         <div onClick={() => setActiveCard("users")} className="cursor-pointer">
           <UserCount />

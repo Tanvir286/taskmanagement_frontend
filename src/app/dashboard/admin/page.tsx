@@ -6,11 +6,11 @@ import { FaBell } from "react-icons/fa";
 import { FiPlus } from "react-icons/fi";
 import {jwtDecode } from "jwt-decode";
 import { Button, Snackbar, Alert } from "@mui/material";
-import TaskDashboardPage from "../../../component/layout/TaskdashboardPage";
 import UserCount from "../../../component/layout/UserCount";
 import UserList from "../../../component/layout/UserList";
-import TaskList from "../../../component/layout/TaskList";
 import socket from "@/lib/socket";
+import AdminTotalTaskList from "@/component/section/admin/AdminTotalTaskList";
+import AdminProcessTable from "@/component/section/admin/AdminProcessTable";
 
 interface JwtPayload {
   username: string;
@@ -62,6 +62,19 @@ useEffect(() => {
     setSnackbarMessage(message);
     setSnackbarOpen(true);
   });
+
+
+   // Task Update by User
+   socket.on("task.updatedbyuser", (task) => {
+      const message = `Task "${task.title}" (ID: ${task.id}) has been updated by ${task.updatedBy?.username || "N/A"}.`;
+      setNotifications((prev) => [
+        { message, time: new Date().toLocaleTimeString() },
+        ...prev,
+      ]);
+      setSnackbarMessage(message);
+      setSnackbarOpen(true);
+    });
+
 
   // Cleanup
   return () => {
@@ -184,7 +197,7 @@ useEffect(() => {
       {/* Top Cards */}
       <div className="flex space-x-4 px-6">
         <div onClick={() => setActiveCard("tasks")} className="cursor-pointer">
-          <TaskDashboardPage />
+          <AdminTotalTaskList />
         </div>
         <div onClick={() => setActiveCard("users")} className="cursor-pointer">
           <UserCount />
@@ -193,7 +206,7 @@ useEffect(() => {
 
       {/* Conditional Lists */}
       <div className="px-6 py-4">
-        {activeCard === "tasks" && <TaskList />}
+        {activeCard === "tasks" && <AdminProcessTable />}
         {activeCard === "users" && <UserList />}
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import socket from "@/lib/socket"; // ✅ তোমার socket instance import করতে হবে
 
 interface Task {
   id: number;
@@ -11,14 +12,19 @@ interface Task {
   deadline: string;
 }
 
-const TaskDashboardPage = () => {
+const AdminTotalTaskList = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // API দিয়ে সব টাস্ক ফেচ করা
   const fetchTasks = async () => {
     try {
-      const res = await fetch("http://localhost:4000/task/getall");
+      const res = await fetch("http://localhost:4000/task/getall", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
       if (!res.ok) throw new Error("Failed to fetch tasks");
       const data: Task[] = await res.json();
       setTasks(data);
@@ -31,6 +37,27 @@ const TaskDashboardPage = () => {
 
   useEffect(() => {
     fetchTasks();
+  }, []);
+
+  // ✅ Socket.io দিয়ে real-time updates
+  useEffect(() => {
+    // নতুন টাস্ক create হলে
+    socket.on("task.created", (newTask: Task) => {
+      setTasks((prev) => {
+        if (prev.some((task) => task.id === newTask.id)) return prev; // ডুপ্লিকেট আটকানো
+        return [newTask, ...prev];
+      });
+    });
+
+    // টাস্ক delete হলে
+    socket.on("task.deleted", (data: { id: number }) => {
+      setTasks((prev) => prev.filter((task) => task.id !== data.id));
+    });
+
+    return () => {
+      socket.off("task.created");
+      socket.off("task.deleted");
+    };
   }, []);
 
   return (
@@ -46,4 +73,4 @@ const TaskDashboardPage = () => {
   );
 };
 
-export default TaskDashboardPage;
+export default AdminTotalTaskList;
